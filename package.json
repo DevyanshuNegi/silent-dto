@@ -1,0 +1,67 @@
+{
+  "name": "silent-dto",
+  "version": "0.2.0",
+  "description": "ESLint rule (and CLI) that finds the @Body() parameters where NestJS silently skipped validation.",
+  "keywords": [
+    "eslint",
+    "eslintplugin",
+    "nestjs",
+    "validation",
+    "validationpipe",
+    "class-validator",
+    "security",
+    "static-analysis",
+    "mass-assignment"
+  ],
+  "license": "MIT",
+  "author": "Devyanshu Negi",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DevyanshuNegi/silent-dto.git"
+  },
+  "homepage": "https://github.com/DevyanshuNegi/silent-dto#readme",
+  "bugs": "https://github.com/DevyanshuNegi/silent-dto/issues",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "silent-dto": "dist/scan.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "docs",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test \"tests/*.test.mjs\"",
+    "prepublishOnly": "npm run build",
+    "dev": "ts-node src/scan.ts"
+  },
+  "peerDependencies": {
+    "eslint": ">=9",
+    "typescript": ">=4.8"
+  },
+  "peerDependenciesMeta": {
+    "eslint": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "@typescript-eslint/utils": "^8.0.0",
+    "eslint": "^10.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
