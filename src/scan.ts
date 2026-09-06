@@ -48,13 +48,53 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import * as ts from 'typescript';
+import type * as TS from 'typescript';
+
+/**
+ * The CLI needs the TypeScript compiler API at runtime, but a static import
+ * breaks the headline use — `npx silent-dto` in a project that has never
+ * installed this package — because npx resolves the open peer range to
+ * whatever is newest, and TypeScript 7 (the ESM-only native compiler) does not
+ * expose this API through `require`.
+ *
+ * Resolution order: the target project's own compiler first (verdicts stay
+ * consistent with the build being audited), then whatever sits alongside this
+ * package. A candidate counts only if it actually exposes the API this file
+ * uses; anything else falls through.
+ */
+function loadTypeScript(): typeof TS {
+  const candidates: Array<() => unknown> = [
+    () => require(require.resolve('typescript', { paths: [process.cwd()] })),
+    () => require('typescript'),
+  ];
+  for (const load of candidates) {
+    try {
+      const mod = load() as {
+        ScriptTarget?: unknown;
+        default?: { ScriptTarget?: unknown };
+      };
+      if (mod?.ScriptTarget) return mod as typeof TS;
+      if (mod?.default?.ScriptTarget) return mod.default as typeof TS;
+    } catch {
+      // try the next candidate
+    }
+  }
+  console.error(
+    'silent-dto: could not load the TypeScript compiler API — looked in this\n' +
+      "project's node_modules, then alongside silent-dto itself.\n" +
+      'Install a supported compiler in the project and re-run:  npm i -D typescript',
+  );
+  process.exit(2);
+}
+
 import {
   PIPE_SKIPPED_BUILTINS,
   TYPE_ONLY_UTILITIES,
   short,
   type Erasure,
 } from './erasure';
+
+const ts = loadTypeScript();
 
 export type Finding = {
   /** Repo-relative path, e.g. `src/modules/fleet/fleet.controller.ts`. */
@@ -78,8 +118,8 @@ export type Finding = {
  * rule; this function's only job is mapping `ts.SyntaxKind` onto it.
  */
 export function classify(
-  node: ts.TypeNode | undefined,
-  text: (n: ts.Node) => string = (n) => n.getText(),
+  node: TS.TypeNode | undefined,
+  text: (n: TS.Node) => string = (n) => n.getText(),
 ): Erasure | null {
   if (!node) return { id: 'missingAnnotation', data: {} };
 
@@ -93,7 +133,7 @@ export function classify(
     case ts.SyntaxKind.TypeLiteral:
       return { id: 'erasedTypeLiteral', data: {} };
     case ts.SyntaxKind.ImportType: {
-      const importNode = node as ts.ImportTypeNode;
+      const importNode = node as TS.ImportTypeNode;
       const qualifier = importNode.qualifier;
       const name = !qualifier
         ? null
@@ -159,19 +199,19 @@ export function classify(
   };
 }
 
-function decoratorsOf(node: ts.ParameterDeclaration): readonly ts.Decorator[] {
+function decoratorsOf(node: TS.ParameterDeclaration): readonly TS.Decorator[] {
   // ts.getDecorators is 4.8+; fall back for older toolchains.
   const anyTs = ts as unknown as {
-    getDecorators?: (n: ts.Node) => readonly ts.Decorator[] | undefined;
+    getDecorators?: (n: TS.Node) => readonly TS.Decorator[] | undefined;
   };
   if (typeof anyTs.getDecorators === 'function') {
     return anyTs.getDecorators(node) ?? [];
   }
-  return (node as unknown as { decorators?: readonly ts.Decorator[] }).decorators ?? [];
+  return (node as unknown as { decorators?: readonly TS.Decorator[] }).decorators ?? [];
 }
 
 /** True when the parameter carries a bare `@Body()` (whole-body, not `@Body('field')`). */
-function isWholeBodyParam(param: ts.ParameterDeclaration): boolean {
+function isWholeBodyParam(param: TS.ParameterDeclaration): boolean {
   return decoratorsOf(param).some((dec) => {
     const call = dec.expression;
     if (!ts.isCallExpression(call)) return false;
@@ -206,7 +246,7 @@ export function collectBodyParams(absPath: string, root: string): BodyParam[] {
   const sf = ts.createSourceFile(absPath, source, ts.ScriptTarget.Latest, true);
   const params: BodyParam[] = [];
 
-  const visit = (node: ts.Node): void => {
+  const visit = (node: TS.Node): void => {
     if (ts.isClassDeclaration(node) && node.name) {
       const controller = node.name.text;
 

@@ -34,7 +34,7 @@ type Plugin = {
 };
 
 const plugin: Plugin = {
-  meta: { name: 'silent-dto', version: '0.2.0' },
+  meta: { name: 'silent-dto', version: '0.2.1' },
   rules: { 'no-unvalidated-body': noUnvalidatedBody },
   configs: {},
 };
