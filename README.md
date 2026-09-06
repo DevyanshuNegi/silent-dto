@@ -66,7 +66,7 @@ The CLI and the lint rule classify through the same code and are held to identic
 
 ---
 
-## Why this happens
+## Why ValidationPipe silently skips these routes
 
 `ValidationPipe` only runs when the parameter's **emitted metatype is a class**. Internally, [`toValidate()`](https://github.com/nestjs/nest/blob/master/packages/common/pipes/validation.pipe.ts) returns `false` for `String | Boolean | Number | Array | Object | Buffer | Date` — and when it returns false the pipe returns your body **untouched**.
 
@@ -199,6 +199,14 @@ But be honest about what you're accepting: **no whitelisting on an endpoint that
 - The CLI walks `.controller.ts` only; `configs.all` lifts that restriction for the lint rule.
 - Requires `emitDecoratorMetadata: true`. If yours is off, **every** route is unvalidated and you have a bigger problem than this tool.
 - **`nestjs-zod` / zod-pipe users are unaffected** — they bypass class-validator entirely, so the metatype never mattered.
+
+---
+
+## Using it with AI coding agents
+
+This rule was built for the agent loop. Coding agents don't discover and adopt tools — but they *do* reliably re-run the project's lint after editing and fix what comes back. Every message this rule emits is written as the fix rather than the diagnosis, so an agent (or a human) can apply it without knowing the tool exists.
+
+If your editor's agent uses [ESLint's official MCP server](https://eslint.org/docs/latest/use/mcp) (`npx @eslint/mcp@latest` — works with Copilot, Cursor, Windsurf, Claude Code), silent-dto findings reach the agent natively once the plugin is in your `eslint.config.mjs`. No extra configuration.
 
 ---
 
