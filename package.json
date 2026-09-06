@@ -45,7 +45,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "npm run build && node --test \"tests/*.test.mjs\"",
+    "test": "npm run build && node --test tests/*.test.mjs",
     "prepublishOnly": "npm run build",
     "dev": "ts-node src/scan.ts"
   },
