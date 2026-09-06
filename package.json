@@ -1,14 +1,19 @@
 {
   "name": "silent-dto",
   "version": "0.2.0",
-  "description": "ESLint rule (and CLI) that finds the @Body() parameters where NestJS silently skipped validation.",
+  "description": "ESLint rule + CLI that finds NestJS @Body() parameters where ValidationPipe silently skips validation — Partial<T>, unknown, inline types and import() types all erase to Object.",
   "keywords": [
     "eslint",
+    "eslint-plugin",
     "eslintplugin",
     "nestjs",
+    "nest",
+    "dto",
     "validation",
     "validationpipe",
     "class-validator",
+    "mapped-types",
+    "typescript",
     "security",
     "static-analysis",
     "mass-assignment"

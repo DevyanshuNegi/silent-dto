@@ -1,5 +1,9 @@
 # silent-dto
 
+[![npm version](https://img.shields.io/npm/v/silent-dto)](https://www.npmjs.com/package/silent-dto)
+[![CI](https://github.com/DevyanshuNegi/silent-dto/actions/workflows/ci.yml/badge.svg)](https://github.com/DevyanshuNegi/silent-dto/actions/workflows/ci.yml)
+[![license](https://img.shields.io/npm/l/silent-dto)](LICENSE)
+
 **Find the `@Body()` parameters where NestJS silently skipped validation.**
 
 Your global `ValidationPipe` doesn't run on every route. On some of them it hands the raw request body straight to your handler — no whitelisting, no coercion, and every `@IsEnum` / `@IsUUID` / `@Min` on the DTO dead. The route looks validated in review. It isn't.
